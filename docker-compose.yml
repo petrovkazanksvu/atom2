@@ -1,0 +1,68 @@
+version: "3"
+services:
+  wireshark:
+    image: ghcr.io/linuxserver/wireshark
+    container_name: wireshark
+    cap_add:
+      - NET_ADMIN
+    #network_mode: host
+    networks:
+      app_net:
+        ipv4_address: 172.16.238.12
+        ipv6_address: 2001:3984:3989::12
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - /path/to/config:/config
+    ports:
+      - 3000:3000 #optional
+    restart: unless-stopped
+
+  com_fr_s_1:
+    image: petrovkazanksvu/my_freer:third
+    user: root
+#   volumes:
+#      - ${APP_PATH_HOST_users}:${APP_PATH_CONTAINER_users}
+#      - ${APP_PATH_HOST_clients}:${APP_PATH_CONTAINER_clients}
+    stdin_open: true
+    tty: true
+    networks:
+      app_net:
+        ipv4_address: 172.16.238.11
+        ipv6_address: 2001:3984:3989::11
+    #networks:
+    # - backend
+  com_fr_c_1:
+    image: petrovkazanksvu/my_freer:third
+#    working_dir: ${APP_PATH_CONTAINER}
+    stdin_open: true
+    tty: true
+
+    #networks:
+    # - backend
+
+#networks:
+#  frontend:
+    # Use a custom driver
+#    driver: custom-driver-1
+#  backend:
+    # Use a custom driver which takes special options
+#    driver: bridge
+    networks:
+      app_net:
+        ipv4_address: 172.16.238.10
+        ipv6_address: 2001:3984:3989::10
+
+networks:
+  app_net:
+    driver: bridge
+    enable_ipv6: true
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.238.0/24
+          gateway: 172.16.238.1
+        - subnet: 2001:3984:3989::/64
+          gateway: 2001:3984:3989::1
